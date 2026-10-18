@@ -682,9 +682,10 @@ class MainActivity : ComponentActivity() {
     ) = traceSection("MainActivity.MainUI") {
         val commonNavItems = remember {
             persistentListOf(
+                BottomNavItem("Library", R.string.tab_library, R.drawable.rounded_library_music_24, R.drawable.round_library_music_24, Screen.Library),
                 BottomNavItem("Home", R.string.tab_home, R.drawable.rounded_home_24, R.drawable.home_24_rounded_filled, Screen.Home),
                 BottomNavItem("Search", R.string.search, R.drawable.rounded_search_24, R.drawable.rounded_search_24, Screen.Search),
-                BottomNavItem("Library", R.string.tab_library, R.drawable.rounded_library_music_24, R.drawable.round_library_music_24, Screen.Library)
+                //BottomNavItem("Library", R.string.tab_library, R.drawable.rounded_library_music_24, R.drawable.round_library_music_24, Screen.Library)
             )
         }
         val navBackStackEntry by navController.currentBackStackEntryAsState()
