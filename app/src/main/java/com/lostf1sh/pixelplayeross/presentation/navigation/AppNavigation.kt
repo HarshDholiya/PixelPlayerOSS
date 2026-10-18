@@ -733,7 +733,7 @@ fun AppNavigation(
 private fun String.toRoute(): String = when (this) {
     LaunchTab.SEARCH -> Screen.Search.route
     LaunchTab.LIBRARY -> Screen.Library.route
-    else -> Screen.Home.route
+    else -> Screen.Library.route
 }
 
 private enum class MainRootDirection {
