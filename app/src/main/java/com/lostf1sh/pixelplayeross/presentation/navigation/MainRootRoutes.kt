@@ -8,8 +8,8 @@ internal fun isMainRootRoute(route: String?): Boolean = when (route) {
 }
 
 internal fun mainRootRouteIndex(route: String?): Int? = when (route) {
-    Screen.Home.route -> 0
-    Screen.Search.route -> 1
-    Screen.Library.route -> 2
+    Screen.Library.route -> 0
+    Screen.Home.route -> 1
+    Screen.Search.route -> 2
     else -> null
 }
