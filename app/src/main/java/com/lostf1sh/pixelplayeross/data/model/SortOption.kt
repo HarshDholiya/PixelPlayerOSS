@@ -161,6 +161,14 @@ sealed class SortOption(
         methodKey = "album_date_added",
         direction = SortDirection.Descending
     )
+    object AlbumLastPlayed : SortOption(
+    storageKey = "album_last_played",
+    displayName = "Last Played",
+    methodLabel = "Last Played",
+    methodLabelRes = R.string.sort_method_last_played,
+    methodKey = "album_last_played",
+    direction = SortDirection.Descending
+)
     object AlbumSizeAsc : SortOption(
         storageKey = "album_size_asc",
         displayName = "Fewest Songs",
@@ -401,6 +409,7 @@ sealed class SortOption(
             listOf(
                 AlbumTitleAZ,
                 AlbumTitleZA,
+                AlbumLastPlayed,
                 AlbumArtist,
                 AlbumArtistDesc,
                 AlbumReleaseYear,
