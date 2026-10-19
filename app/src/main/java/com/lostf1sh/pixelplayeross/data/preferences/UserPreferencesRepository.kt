@@ -1403,7 +1403,7 @@ constructor(
 
     val launchTabFlow: Flow<String> =
             dataStore.data.map { preferences ->
-                preferences[PreferencesKeys.LAUNCH_TAB] ?: LaunchTab.HOME
+                preferences[PreferencesKeys.LAUNCH_TAB] ?: LaunchTab.LIBRARY
             }
 
     suspend fun setLaunchTab(tab: String) {
