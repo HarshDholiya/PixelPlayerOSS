@@ -3346,7 +3346,7 @@ fun AlbumGridItemRedesigned(
         val playIconColor = itemDesignColorScheme.onPrimary
         Box(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
+                .align(Alignment.BottomStart)
                 .padding(10.dp)
                 .size(40.dp)
                 .background(color = playButtonColor, shape = CircleShape)
