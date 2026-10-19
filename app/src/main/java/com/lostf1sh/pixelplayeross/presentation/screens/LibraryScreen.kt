@@ -3208,7 +3208,8 @@ fun AlbumGridItemRedesigned(
     selectionIndex: Int? = null,
     onLongPress: () -> Unit = {},
     onSelectionToggle: () -> Unit = {},
-    customShape: androidx.compose.ui.graphics.Shape? = null
+        customShape: androidx.compose.ui.graphics.Shape? = null,
+    onPlayClick: (() -> Unit)? = null
 ) {
     val albumColorSchemePair by albumColorSchemePairFlow.collectAsStateWithLifecycle()
     val systemIsDark = LocalPixelPlayerDarkTheme.current
@@ -3320,40 +3321,51 @@ fun AlbumGridItemRedesigned(
                     )
                 ) {
                     Box(contentAlignment = Alignment.BottomStart) {
-                        var isLoadingImage by remember { mutableStateOf(true) }
-                        SmartImage(
-                            model = album.albumArtUriString,
-                            contentDescription = stringResource(R.string.cd_album_art_for_title, album.title),
-                            contentScale = ContentScale.Crop,
-                            targetSize = Size(256, 256),
-                            modifier = Modifier
-                                .aspectRatio(3f / 2f)
-                                .fillMaxSize(),
-                            onState = { state ->
-                                isLoadingImage = state is AsyncImagePainter.State.Loading
-                            }
-                        )
-                        if (isLoadingImage) {
-                            ShimmerBox(
-                                modifier = Modifier
-                                    .aspectRatio(3f / 2f)
-                                    .fillMaxSize()
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .aspectRatio(3f / 2f)
-                                .background(
-                                    remember(gradientBaseColor) {
-                                        Brush.verticalGradient(
-                                            colors = listOf(
-                                                Color.Transparent, gradientBaseColor
-                                            )
-                                        )
-                                    })
-                        )
-                    }
+    var isLoadingImage by remember { mutableStateOf(true) }
+    SmartImage(
+        model = album.albumArtUriString,
+        contentDescription = stringResource(R.string.cd_album_art_for_title, album.title),
+        contentScale = ContentScale.Crop,
+        targetSize = Size(256, 256),
+        modifier = Modifier
+            .aspectRatio(1f)
+            .fillMaxSize(),
+        onState = { state ->
+            isLoadingImage = state is AsyncImagePainter.State.Loading
+        }
+    )
+    if (isLoadingImage) {
+        ShimmerBox(
+            modifier = Modifier
+                .aspectRatio(1f)
+                .fillMaxSize()
+        )
+    }
+    if (onPlayClick != null && !isSelectionMode) {
+        val playButtonColor = itemDesignColorScheme.primary
+        val playIconColor = itemDesignColorScheme.onPrimary
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(10.dp)
+                .size(40.dp)
+                .background(color = playButtonColor, shape = CircleShape)
+                .clip(CircleShape)
+                .combinedClickable(onClick = { onPlayClick() }),
+            contentAlignment = Alignment.Center
+        ) {
+            androidx.compose.foundation.Canvas(modifier = Modifier.size(16.dp)) {
+                val trianglePath = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(size.width * 0.15f, 0f)
+                    lineTo(size.width, size.height / 2f)
+                    lineTo(size.width * 0.15f, size.height)
+                    close()
+                }
+                drawPath(path = trianglePath, color = playIconColor)
+            }
+        }
+    }
+}
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
