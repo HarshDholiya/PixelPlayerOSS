@@ -680,14 +680,19 @@ class MainActivity : ComponentActivity() {
         playerViewModel: PlayerViewModel,
         navController: NavHostController
     ) = traceSection("MainActivity.MainUI") {
-        val commonNavItems = remember {
-            persistentListOf(
-                BottomNavItem("Library", R.string.tab_library, R.drawable.rounded_library_music_24, R.drawable.round_library_music_24, Screen.Library),
-                BottomNavItem("Home", R.string.tab_home, R.drawable.rounded_home_24, R.drawable.home_24_rounded_filled, Screen.Home),
-                BottomNavItem("Search", R.string.search, R.drawable.rounded_search_24, R.drawable.rounded_search_24, Screen.Search),
-                //BottomNavItem("Library", R.string.tab_library, R.drawable.rounded_library_music_24, R.drawable.round_library_music_24, Screen.Library)
-            )
-        }
+        val launchTab by userPreferencesRepository.launchTabFlow
+    .collectAsStateWithLifecycle(initialValue = com.lostf1sh.pixelplayeross.data.preferences.LaunchTab.LIBRARY)
+val commonNavItems = remember(launchTab) {
+    val home = BottomNavItem("Home", R.string.tab_home, R.drawable.rounded_home_24, R.drawable.home_24_rounded_filled, Screen.Home)
+    val library = BottomNavItem("Library", R.string.tab_library, R.drawable.rounded_library_music_24, R.drawable.round_library_music_24, Screen.Library)
+    val search = BottomNavItem("Search", R.string.search, R.drawable.rounded_search_24, R.drawable.rounded_search_24, Screen.Search)
+    val ordered = when (launchTab) {
+        com.lostf1sh.pixelplayeross.data.preferences.LaunchTab.SEARCH -> listOf(search, home, library)
+        com.lostf1sh.pixelplayeross.data.preferences.LaunchTab.LIBRARY -> listOf(library, home, search)
+        else -> listOf(home, library, search)
+    }
+    persistentListOf(*ordered.toTypedArray())
+}
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
         var isSearchBarActive by remember { mutableStateOf(false) }
