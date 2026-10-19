@@ -417,7 +417,8 @@ fun LibraryAlbumsTab(
                                             selectionIndex = getSelectionIndex(album.id),
                                             onLongPress = rememberedOnLongPress,
                                             onSelectionToggle = rememberedOnSelectionToggle,
-                                            customShape = itemShape
+                                            customShape = itemShape,
+                                            onPlayClick = { playerViewModel.playAlbum(album) }
                                         )
                                     } else {
                                         AlbumGridItemRedesigned(
