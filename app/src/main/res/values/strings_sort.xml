@@ -9,6 +9,7 @@
     <string name="sort_method_duration">Duration</string>
     <string name="sort_method_release_year">Release Year</string>
     <string name="sort_method_song_count">Song Count</string>
+    <string name="sort_method_last_played" translatable="false">Last Played</string>
     <string name="sort_method_name">Name</string>
     <string name="sort_method_num_songs">Number of Songs</string>
     <string name="sort_method_date_created">Date Created</string>
