@@ -45,7 +45,8 @@ private data class GenreSeed(
 @Singleton
 class LibraryStateHolder @Inject constructor(
     private val musicRepository: MusicRepository,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val dailyMixManager: com.lostf1sh.pixelplayeross.data.DailyMixManager
 ) {
 
     private val _allSongs = MutableStateFlow<ImmutableList<Song>>(persistentListOf())
@@ -398,7 +399,7 @@ class LibraryStateHolder @Inject constructor(
         }
     }
 
-    private fun sortAlbumsList(albums: Iterable<Album>, sortOption: SortOption): List<Album> {
+    private suspend fun sortAlbumsList(albums: Iterable<Album>, sortOption: SortOption): List<Album> {
         return when (sortOption) {
             SortOption.AlbumTitleAZ -> albums.sortedWith(
                 compareBy<Album> { it.title.lowercase() }
@@ -445,6 +446,23 @@ class LibraryStateHolder @Inject constructor(
                     .thenBy { it.title.lowercase() }
                     .thenBy { it.id }
             )
+            SortOption.AlbumLastPlayed -> {
+    val songs = musicRepository.getAllSongsOnce()
+    val stats = dailyMixManager.getAllEngagementStats()
+    val lastPlayedByAlbum = HashMap<String, Long>()
+    for (song in songs) {
+        val played = stats[song.id]?.lastPlayedTimestamp ?: 0L
+        val key = song.albumId.toString()
+        if (played > (lastPlayedByAlbum[key] ?: 0L)) {
+            lastPlayedByAlbum[key] = played
+        }
+    }
+    albums.sortedWith(
+        compareByDescending<Album> { lastPlayedByAlbum[it.id.toString()] ?: 0L }
+            .thenBy { it.title.lowercase() }
+            .thenBy { it.id }
+    )
+}
             else -> albums.toList()
         }
     }
