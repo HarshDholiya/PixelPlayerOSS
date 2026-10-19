@@ -39,6 +39,7 @@ enum class LibraryTabId(
             SortOption.AlbumTitleZA,
             SortOption.AlbumArtist,
             SortOption.AlbumArtistDesc,
+            SortOption.AlbumLastPlayed,
             SortOption.AlbumReleaseYear,
             SortOption.AlbumReleaseYearAsc,
             SortOption.AlbumDateAdded
