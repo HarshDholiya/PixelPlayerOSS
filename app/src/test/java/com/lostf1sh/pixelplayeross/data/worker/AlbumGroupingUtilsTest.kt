@@ -35,6 +35,22 @@ class AlbumGroupingUtilsTest {
     }
 
     @Test
+    fun `buildAlbumGroupingKey groups same-folder soundtrack tracks despite different album artists`() {
+        val firstTrack = testSong(
+            artistName = "Singer A",
+            albumArtist = "Singer A",
+            parentDirectoryPath = "/music/Movie Soundtrack"
+        )
+        val secondTrack = testSong(
+            artistName = "Singer B",
+            albumArtist = "Singer B",
+            parentDirectoryPath = "/music/Movie Soundtrack"
+        )
+
+        assertThat(buildAlbumGroupingKey(firstTrack)).isEqualTo(buildAlbumGroupingKey(secondTrack))
+    }
+
+    @Test
     fun `buildAlbumGroupingKey keeps same-titled albums apart when directories differ`() {
         val firstAlbum = testSong(
             artistName = "Artist A",

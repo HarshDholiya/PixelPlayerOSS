@@ -60,6 +60,9 @@ class ListeningStatsTracker @Inject constructor(
     @Synchronized
     fun onVoluntarySelection(songId: String) {
         pendingVoluntarySongId = songId
+        persistenceScope.launch {
+            dailyMixManager.markPlayed(songId)
+        }
     }
 
     fun onSongChanged(

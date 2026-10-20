@@ -248,6 +248,18 @@ class DailyMixManager @Inject constructor(
         )
     }
 
+    /**
+     * Marks a song as recently selected immediately. Play counts and listening
+     * duration remain recorded by recordPlay when the listening session ends.
+     */
+    suspend fun markPlayed(songId: String, timestamp: Long = System.currentTimeMillis()) {
+        ensureLegacyDataMigrated()
+        engagementDao.markPlayed(
+            songId = songId,
+            timestamp = timestamp.coerceAtLeast(0L)
+        )
+    }
+
     suspend fun incrementScore(songId: String) {
         recordPlay(songId)
     }
