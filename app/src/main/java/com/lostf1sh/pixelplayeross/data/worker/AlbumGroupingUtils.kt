@@ -142,7 +142,7 @@ private fun buildAlbumGroupingKey(
     val identity = when {
         // For local files, a shared album folder is a stronger signal than
         // per-track ALBUMARTIST tags, which can be inconsistent on movie soundtracks.
-        !parentDirectoryPath.isNullOrBlank() -> {
+        preferStableLocalIdentity && !parentDirectoryPath.isNullOrBlank() -> {
             "dir:${parentDirectoryPath.trim().lowercase()}"
         }
         !albumArtist.isNullOrBlank() -> {
