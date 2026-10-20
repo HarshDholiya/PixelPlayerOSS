@@ -447,22 +447,39 @@ class LibraryStateHolder @Inject constructor(
                     .thenBy { it.id }
             )
             SortOption.AlbumLastPlayed -> {
-    val songs = musicRepository.getAllSongsOnce()
-    val stats = dailyMixManager.getAllEngagementStats()
-    val lastPlayedByAlbum = HashMap<String, Long>()
-    for (song in songs) {
-        val played = stats[song.id]?.lastPlayedTimestamp ?: 0L
-        val key = song.albumId.toString()
-        if (played > (lastPlayedByAlbum[key] ?: 0L)) {
-            lastPlayedByAlbum[key] = played
-        }
-    }
-    albums.sortedWith(
-        compareByDescending<Album> { lastPlayedByAlbum[it.id.toString()] ?: 0L }
-            .thenBy { it.title.lowercase() }
-            .thenBy { it.id }
-    )
-}
+                val songs = musicRepository.getAllSongsOnce()
+                val stats = dailyMixManager.getAllEngagementStats()
+                val lastPlayedByAlbumId = HashMap<String, Long>()
+                val lastPlayedByAlbumTitle = HashMap<String, Long>()
+
+                for (song in songs) {
+                    val played = stats[song.id]?.lastPlayedTimestamp ?: 0L
+                    if (played <= 0L) continue
+
+                    // Prefer the stable album ID, but also track by title because merged
+                    // library albums can use IDs that differ from the source song's album ID.
+                    val idKey = song.albumId.toString()
+                    if (played > (lastPlayedByAlbumId[idKey] ?: 0L)) {
+                        lastPlayedByAlbumId[idKey] = played
+                    }
+
+                    val titleKey = song.album.trim().lowercase()
+                    if (titleKey.isNotEmpty() && played > (lastPlayedByAlbumTitle[titleKey] ?: 0L)) {
+                        lastPlayedByAlbumTitle[titleKey] = played
+                    }
+                }
+
+                albums.sortedWith(
+                    compareByDescending<Album> {
+                        maxOf(
+                            lastPlayedByAlbumId[it.id.toString()] ?: 0L,
+                            lastPlayedByAlbumTitle[it.title.trim().lowercase()] ?: 0L
+                        )
+                    }
+                        .thenBy { it.title.lowercase() }
+                        .thenBy { it.id }
+                )
+            }
             else -> albums.toList()
         }
     }
