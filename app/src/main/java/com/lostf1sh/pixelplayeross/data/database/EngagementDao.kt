@@ -56,6 +56,18 @@ interface EngagementDao {
     suspend fun recordPlay(songId: String, durationMs: Long, timestamp: Long)
 
     /**
+     * Updates recency as soon as the user selects a song, without counting a
+     * completed play or changing accumulated listening duration.
+     */
+    @Query("""
+        INSERT INTO song_engagements (song_id, play_count, total_play_duration_ms, last_played_timestamp)
+        VALUES (:songId, 0, 0, :timestamp)
+        ON CONFLICT(song_id) DO UPDATE SET
+            last_played_timestamp = MAX(song_engagements.last_played_timestamp, excluded.last_played_timestamp)
+    """)
+    suspend fun markPlayed(songId: String, timestamp: Long)
+
+    /**
      * Get top songs by play count for quick access.
      */
     @Query("SELECT * FROM song_engagements ORDER BY play_count DESC LIMIT :limit")
