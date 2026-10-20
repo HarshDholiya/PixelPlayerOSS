@@ -1166,6 +1166,13 @@ interface MusicDao {
             CASE WHEN :sortOrder = 'album_date_added' THEN albums.date_added END DESC,
             CASE WHEN :sortOrder = 'album_size_asc' THEN song_count END ASC,
             CASE WHEN :sortOrder = 'album_size_desc' THEN song_count END DESC,
+            CASE WHEN :sortOrder = 'album_last_played' THEN (
+                SELECT MAX(se.last_played_timestamp)
+                FROM songs played_song
+                INNER JOIN song_engagements se ON se.song_id = CAST(played_song.id AS TEXT)
+                WHERE played_song.album_id = albums.id
+                   OR LOWER(TRIM(played_song.album_name)) = LOWER(TRIM(albums.title))
+            ) END DESC,
             albums.title COLLATE NOCASE ASC,
             albums.artist_name COLLATE NOCASE ASC,
             albums.id ASC
@@ -1223,6 +1230,13 @@ interface MusicDao {
             CASE WHEN :sortOrder = 'album_date_added' THEN albums.date_added END DESC,
             CASE WHEN :sortOrder = 'album_size_asc' THEN song_count END ASC,
             CASE WHEN :sortOrder = 'album_size_desc' THEN song_count END DESC,
+            CASE WHEN :sortOrder = 'album_last_played' THEN (
+                SELECT MAX(se.last_played_timestamp)
+                FROM songs played_song
+                INNER JOIN song_engagements se ON se.song_id = CAST(played_song.id AS TEXT)
+                WHERE played_song.album_id = albums.id
+                   OR LOWER(TRIM(played_song.album_name)) = LOWER(TRIM(albums.title))
+            ) END DESC,
             albums.title COLLATE NOCASE ASC,
             albums.artist_name COLLATE NOCASE ASC,
             albums.id ASC
