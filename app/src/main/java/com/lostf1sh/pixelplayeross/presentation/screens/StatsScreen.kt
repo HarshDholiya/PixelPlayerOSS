@@ -382,6 +382,29 @@ fun StatsScreen(
                             )
                         }
                         // Listening activity over time follows the overview cards, before rankings.
+                        item(key = "artist_highlight", contentType = "artist_highlight") {
+                            TopArtistHighlight(
+                                summary = summary,
+                                artistImages = artistImages,
+                                onEntryClick = onRotationEntryClick,
+                                modifier = Modifier.padding(horizontal = ScreenGutter)
+                            )
+                        }
+                        item(key = "sessions", contentType = "sessions") {
+                            SessionOverviewSection(summary = summary, modifier = Modifier.padding(horizontal = ScreenGutter))
+                        }
+                        item(key = "heatmap", contentType = "heatmap") {
+                            ListeningHeatmapSection(summary = summary, modifier = Modifier.padding(horizontal = ScreenGutter))
+                        }
+                        item(key = "top_songs", contentType = "top_songs") {
+                            TopSongsSection(summary = summary, onEntryClick = onRotationEntryClick, modifier = Modifier.padding(horizontal = ScreenGutter))
+                        }
+                        item(key = "top_albums", contentType = "top_albums") {
+                            TopAlbumsSection(summary = summary, onEntryClick = onRotationEntryClick, modifier = Modifier.padding(horizontal = ScreenGutter))
+                        }
+                        item(key = "top_genres", contentType = "top_genres") {
+                            TopGenresSection(summary = summary, onEntryClick = onRotationEntryClick, modifier = Modifier.padding(horizontal = ScreenGutter))
+                        }
                         item(key = "timeline", contentType = "timeline") {
                             ListeningTimelineSection(
                                 summary = summary,
@@ -390,15 +413,8 @@ fun StatsScreen(
                                 modifier = Modifier.padding(horizontal = ScreenGutter)
                             )
                         }
-                        item(key = "heavy_rotation", contentType = "heavy_rotation") {
-                            HeavyRotationSection(
-                                summary = summary,
-                                artistImages = artistImages,
-                                selected = selectedRotation,
-                                onSelected = { selectedRotation = it },
-                                onEntryClick = onRotationEntryClick,
-                                modifier = Modifier.padding(horizontal = ScreenGutter)
-                            )
+                        item(key = "habits", contentType = "habits") {
+                            ListeningHabitsGrid(summary = summary, modifier = Modifier.padding(horizontal = ScreenGutter))
                         }
                         item(key = "variety", contentType = "variety") {
                             ListeningVarietyCard(
