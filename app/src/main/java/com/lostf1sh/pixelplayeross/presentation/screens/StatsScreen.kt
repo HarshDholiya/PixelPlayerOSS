@@ -373,6 +373,38 @@ fun StatsScreen(
                                 modifier = Modifier.padding(horizontal = ScreenGutter)
                             )
                         }
+                        // Keep the high-level listening totals first, followed by the
+                        // personal listening habits, as in the reference Statistics layout.
+                        item(key = "habits", contentType = "habits") {
+                            ListeningHabitsGrid(
+                                summary = summary,
+                                modifier = Modifier.padding(horizontal = ScreenGutter)
+                            )
+                        }
+                        // Listening activity over time follows the overview cards, before rankings.
+                        item(key = "artist_highlight", contentType = "artist_highlight") {
+                            TopArtistHighlight(
+                                summary = summary,
+                                artistImages = artistImages,
+                                onEntryClick = onRotationEntryClick,
+                                modifier = Modifier.padding(horizontal = ScreenGutter)
+                            )
+                        }
+                        item(key = "sessions", contentType = "sessions") {
+                            SessionOverviewSection(summary = summary, modifier = Modifier.padding(horizontal = ScreenGutter))
+                        }
+                        item(key = "heatmap", contentType = "heatmap") {
+                            ListeningHeatmapSection(summary = summary, modifier = Modifier.padding(horizontal = ScreenGutter))
+                        }
+                        item(key = "top_songs", contentType = "top_songs") {
+                            TopSongsSection(summary = summary, onEntryClick = onRotationEntryClick, modifier = Modifier.padding(horizontal = ScreenGutter))
+                        }
+                        item(key = "top_albums", contentType = "top_albums") {
+                            TopAlbumsSection(summary = summary, onEntryClick = onRotationEntryClick, modifier = Modifier.padding(horizontal = ScreenGutter))
+                        }
+                        item(key = "top_genres", contentType = "top_genres") {
+                            TopGenresSection(summary = summary, onEntryClick = onRotationEntryClick, modifier = Modifier.padding(horizontal = ScreenGutter))
+                        }
                         item(key = "timeline", contentType = "timeline") {
                             ListeningTimelineSection(
                                 summary = summary,
@@ -381,21 +413,8 @@ fun StatsScreen(
                                 modifier = Modifier.padding(horizontal = ScreenGutter)
                             )
                         }
-                        item(key = "heavy_rotation", contentType = "heavy_rotation") {
-                            HeavyRotationSection(
-                                summary = summary,
-                                artistImages = artistImages,
-                                selected = selectedRotation,
-                                onSelected = { selectedRotation = it },
-                                onEntryClick = onRotationEntryClick,
-                                modifier = Modifier.padding(horizontal = ScreenGutter)
-                            )
-                        }
                         item(key = "habits", contentType = "habits") {
-                            ListeningHabitsGrid(
-                                summary = summary,
-                                modifier = Modifier.padding(horizontal = ScreenGutter)
-                            )
+                            ListeningHabitsGrid(summary = summary, modifier = Modifier.padding(horizontal = ScreenGutter))
                         }
                         item(key = "variety", contentType = "variety") {
                             ListeningVarietyCard(
@@ -804,6 +823,187 @@ private fun RangeTabsHeader(
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (index == selectedIndex) FontWeight.Bold else FontWeight.Medium
                     )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun TopArtistHighlight(
+    summary: PlaybackStatsSummary,
+    artistImages: Map<String, String>,
+    onEntryClick: (RotationEntry) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val entry = remember(summary, artistImages) {
+        buildRotationEntries(summary, RotationDimension.Artists, artistImages).firstOrNull()
+    }
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        StatsSectionHeader("Top artist", "Your most-listened artist in this period")
+        if (entry == null) {
+            StatsEmptyState(Icons.Outlined.Person, "No artist ranking yet", "Artist insights will appear as you listen")
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                    .clickable { onEntryClick(entry) }
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RotationArtwork(entry, 18.dp, false, Modifier.size(76.dp))
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(entry.title, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSecondaryContainer, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(formatListeningDurationCompact(entry.durationMs), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    Text(pluralStringResource(R.plurals.stats_plays_count, entry.playCount, entry.playCount), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f))
+                }
+                Icon(Icons.Outlined.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
+            }
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SessionMetricCard("Longest streak", pluralStringResource(R.plurals.stats_days_count, summary.longestStreakDays, summary.longestStreakDays), Modifier.weight(1f))
+            SessionMetricCard("Active days", NumberFormat.getIntegerInstance().format(summary.activeDays), Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun SessionOverviewSection(summary: PlaybackStatsSummary, modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        StatsSectionHeader("Listening sessions", "Your listening time, session by session")
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SessionMetricCard("Sessions", NumberFormat.getIntegerInstance().format(summary.totalSessions), Modifier.weight(1f))
+            SessionMetricCard("Average", formatListeningDurationCompact(summary.averageSessionDurationMs), Modifier.weight(1f))
+            SessionMetricCard("Longest", formatListeningDurationCompact(summary.longestSessionDurationMs), Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun SessionMetricCard(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(value, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+    }
+}
+
+@Composable
+private fun ListeningHeatmapSection(summary: PlaybackStatsSummary, modifier: Modifier = Modifier) {
+    val days = remember(summary) { summary.dayListeningDistribution?.days.orEmpty().takeLast(7) }
+    val peak = remember(days) {
+        days.maxOfOrNull { day ->
+            (0 until 24).maxOfOrNull { hour -> day.buckets.filter { it.startMinute / 60 == hour }.sumOf { it.totalDurationMs } } ?: 0L
+        } ?: 0L
+    }
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        StatsSectionHeader("When you listen", "Listening activity across the day")
+        if (days.isEmpty()) {
+            StatsEmptyState(Icons.Outlined.AutoGraph, "No listening pattern yet", "Your activity will appear here as you listen")
+        } else {
+            Column(
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainer).padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(7.dp)
+            ) {
+                days.forEach { day ->
+                    val label = day.date.dayOfWeek.name.take(3).lowercase().replaceFirstChar { it.titlecase() }
+                    Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(label, modifier = Modifier.width(28.dp), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        (0 until 24).forEach { hour ->
+                            val duration = day.buckets.filter { it.startMinute / 60 == hour }.sumOf { it.totalDurationMs }
+                            val strength = if (peak > 0L) duration.toFloat() / peak else 0f
+                            Box(
+                                modifier = Modifier.weight(1f).height(18.dp).clip(RoundedCornerShape(4.dp))
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = if (duration == 0L) 0.07f else 0.18f + strength * 0.72f))
+                            )
+                        }
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("12 AM", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("6 AM", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("12 PM", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("6 PM", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("12 AM", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TopSongsSection(summary: PlaybackStatsSummary, onEntryClick: (RotationEntry) -> Unit, modifier: Modifier = Modifier) {
+    val entries = remember(summary) { buildRotationEntries(summary, RotationDimension.Tracks, emptyMap()) }
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        StatsSectionHeader("Top songs", "Your most-played tracks")
+        if (entries.isEmpty()) {
+            StatsEmptyState(Icons.Outlined.MusicNote, "No top songs yet", "Your most-played songs will appear here")
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                entries.forEachIndexed { index, entry ->
+                    RotationRankRow(entry, index + 1, entry.durationMs.toFloat() / entries.first().durationMs.coerceAtLeast(1L), segmentedItemShape(index, entries.size), onEntryClick)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TopAlbumsSection(summary: PlaybackStatsSummary, onEntryClick: (RotationEntry) -> Unit, modifier: Modifier = Modifier) {
+    val entries = remember(summary) { buildRotationEntries(summary, RotationDimension.Albums, emptyMap()) }
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        StatsSectionHeader("Top albums", "Albums you return to most")
+        if (entries.isEmpty()) {
+            StatsEmptyState(Icons.Outlined.Album, "No top albums yet", "Album rankings will appear here")
+        } else {
+            entries.chunked(2).forEach { pair ->
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    pair.forEach { entry ->
+                        Column(
+                            modifier = Modifier.weight(1f).clip(RoundedCornerShape(20.dp))
+                                .background(MaterialTheme.colorScheme.surfaceContainer)
+                                .clickable { onEntryClick(entry) }.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            RotationArtwork(entry, 14.dp, false, Modifier.fillMaxWidth().height(128.dp))
+                            Text(entry.title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                            Text(pluralStringResource(R.plurals.stats_plays_count, entry.playCount, entry.playCount), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    if (pair.size == 1) Spacer(Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TopGenresSection(summary: PlaybackStatsSummary, onEntryClick: (RotationEntry) -> Unit, modifier: Modifier = Modifier) {
+    val entries = remember(summary) { buildRotationEntries(summary, RotationDimension.Genres, emptyMap()) }
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        StatsSectionHeader("Top genres", "The styles behind your listening")
+        if (entries.isEmpty()) {
+            StatsEmptyState(Icons.Outlined.Category, "No genres yet", "Genre insights will appear here")
+        } else {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                entries.forEach { entry ->
+                    Column(
+                        modifier = Modifier.clip(RoundedCornerShape(18.dp))
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .clickable { onEntryClick(entry) }.padding(horizontal = 14.dp, vertical = 10.dp)
+                    ) {
+                        Text(entry.title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                        Text(pluralStringResource(R.plurals.stats_plays_count, entry.playCount, entry.playCount), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f))
+                    }
                 }
             }
         }
