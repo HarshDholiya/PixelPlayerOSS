@@ -373,6 +373,15 @@ fun StatsScreen(
                                 modifier = Modifier.padding(horizontal = ScreenGutter)
                             )
                         }
+                        // Keep the high-level listening totals first, followed by the
+                        // personal listening habits, as in the reference Statistics layout.
+                        item(key = "habits", contentType = "habits") {
+                            ListeningHabitsGrid(
+                                summary = summary,
+                                modifier = Modifier.padding(horizontal = ScreenGutter)
+                            )
+                        }
+                        // Listening activity over time follows the overview cards, before rankings.
                         item(key = "timeline", contentType = "timeline") {
                             ListeningTimelineSection(
                                 summary = summary,
@@ -388,12 +397,6 @@ fun StatsScreen(
                                 selected = selectedRotation,
                                 onSelected = { selectedRotation = it },
                                 onEntryClick = onRotationEntryClick,
-                                modifier = Modifier.padding(horizontal = ScreenGutter)
-                            )
-                        }
-                        item(key = "habits", contentType = "habits") {
-                            ListeningHabitsGrid(
-                                summary = summary,
                                 modifier = Modifier.padding(horizontal = ScreenGutter)
                             )
                         }
